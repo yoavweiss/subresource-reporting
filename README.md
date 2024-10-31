@@ -84,7 +84,7 @@ The Resource Timing API can be used to gather up all the URLs of script resource
 It could also be extended to provide an integrity hash for CORS resources. 
 
 However, that is not ideal because:
-* Currently browsers don’t calculate these hashes, so starting the calculate them for all scripts in all documents could introduce some overhead.
+* Currently browsers don’t calculate these hashes, so starting to calculate them for all scripts in all documents could introduce some overhead.
   Therefore, adding hashes to resource timing may require some opt-in mechanism.
 * Malicious scripts on the site can tamper with Resource Timing data and obfuscate their presence on the page (by e.g. reporting known-good hashes instead of their own).
 
