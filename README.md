@@ -119,5 +119,5 @@ That means that developers can already fetch those resources and calculate their
   - Leaving room for future extensibility if needed feels better.
 * Do we want visibility to ReportingObserver?
   - Any use cases that need it?
-* Would the CORS requirement prevent popular scripts from being having their hashes collected?
+* Would the CORS requirement prevent popular scripts from having their hashes collected?
   - If so, do we need a complementary Document-Policy that enforces CORS for all subresources?
