@@ -39,8 +39,10 @@ inventory of scripts and their integrity for relevant pages.
 
 ### Flow
 Developers can set the following headers on their navigation responses:
-`Reporting-Endpoints: subresources="https://example.com/reports"`
-`Subresource-reporting: script=subresources`
+```http
+Reporting-Endpoints: subresources="https://example.com/reports"
+Subresource-reporting: script=subresources
+```
 
 The `Subresource-reporting` header would be defined as a
 [Dictionary](https://www.rfc-editor.org/rfc/rfc8941#name-dictionaries),
