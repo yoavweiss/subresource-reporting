@@ -102,7 +102,7 @@ Including hash reporting only in report-only mode felt hacky, and would've requi
 
 ### CSP report-only mode + hash reporting
 
-Similarly to the previous section, we could consider to add hash reporting to `script-src` CSP directives. They would suffer from all the issues that `require-sri-for` would suffer from.
+Similarly to the previous section, we could consider adding hash reporting to `script-src` CSP directives. They would suffer from all the issues that `require-sri-for` would suffer from.
 On top of that, they may collide with actual CSP policies that the site would want to deploy.
 
 ## Security & Privacy considerations
