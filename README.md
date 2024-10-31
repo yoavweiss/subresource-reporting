@@ -22,16 +22,20 @@ But other assets are dynamic, ever-green scripts that can be updated by their pr
 The web platform has no means of validating the integrity of such scripts, neither in reporting nor in enforcement mode.
 
 At the same time, 
-[upcoming regulations](https://docs.google.com/document/d/1RcUpbpWPxXTyW0Qwczs9GCTLPD3-LcbbhL4ooBUevTM/edit?tab=t.0#heading=h.dzquzu6onmmy)
-require web developers to keep an inventory of all scripts that run in the context of their documents.
+[upcoming security standards](https://docs.google.com/document/d/1RcUpbpWPxXTyW0Qwczs9GCTLPD3-LcbbhL4ooBUevTM/edit?tab=t.0#heading=h.dzquzu6onmmy)
+require web developers to maintain an up to date inventory of all scripts that execute in the context of their payment page documents,
+and have a mechanism to validate their integrity.
 
+In the absence of better mechanisms, developers and merchants will need to settle for lower fidelity security guarantees — e.g. offline hash verification through crawling.
+Such mechanisms leave a lot to be desired in terms of their coverage, while at the same time add a lot of implementation complexity. We need a better path.
 
 ## Proposal
 
 A new Reporting API feature could be used to send reports of all scripts executed in the context of the relevant document,
 including their URLs and their hashes (for CORS-enabled resources).
 
-That would enable developers to set up endpoints that collect these reports, and process them to get a full inventory of scripts running in the wild.
+That would enable developers to set up endpoints that collect these reports, and process them to maintain an up to date and accurate
+inventory of scripts and their integrity for relevant pages.
 
 ### Flow
 Developers can set the following headers on their navigation responses:
@@ -112,4 +116,8 @@ That means that developers can already fetch those resources and calculate their
 ## Open questions
 
 * Bikeshedding - Should we limit this to scripts only and call it Script Reporting?
+  - Leaving room for future extensibility if needed feels better.
 * Do we want visibility to ReportingObserver?
+  - Any use cases that need it?
+* Would the CORS requirement prevent popular scripts from being having their hashes collected?
+  - If so, do we need a complementary Document-Policy that enforces CORS for all subresources?
