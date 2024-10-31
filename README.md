@@ -95,7 +95,7 @@ Initially it looked like the abandoned
 [`require-sri-for`](https://udn.realityripple.com/docs/Web/HTTP/Headers/Content-Security-Policy/require-sri-for)
 CSP feature may be a good fit here, when combined with report-only mode.
 
-But at a second look, CSP enforcement and reporting happens at request-time, the current implementation does not have access the the resource hashes.
+But at a second look, CSP enforcement and reporting happens at request-time, the current implementation does not have access to the resource hashes.
 That's doubly true in enforcement mode, where the resources are never downloaded (and hence the browser never knows the hash).
 
 Including hash reporting only in report-only mode felt hacky, and would've required significant changes to the CSP reporting implementation.
