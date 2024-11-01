@@ -90,6 +90,14 @@ However, that is not ideal because:
   Therefore, adding hashes to resource timing may require some opt-in mechanism.
 * Malicious scripts on the site can tamper with Resource Timing data and obfuscate their presence on the page (by e.g. reporting known-good hashes instead of their own).
 
+### Service workers
+
+A Service Worker can tee the response streams for CORS-enabled scripts, calculate their hashes and report them to the server.
+
+There are a few fundemental issues with that approach though:
+* A Service Worker will not cover the first time a site loads.
+* Service Worker can be uninstalled by an attacker.
+* A Service Worker can add overhead (even if future optimizations can reduce that).
 
 ### CSP `require-sri-for` + hash reporting
 
