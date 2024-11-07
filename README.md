@@ -32,7 +32,7 @@ Such mechanisms leave a lot to be desired in terms of their coverage, while at t
 ## Proposal
 
 A new Reporting API feature could be used to send reports of all scripts executed in the context of the relevant document,
-including their URLs and their hashes (for CORS-enabled resources).
+including their URLs and their hashes (for CORS-enabled or same-origin resources).
 
 That would enable developers to set up endpoints that collect these reports, and process them to maintain an up to date and accurate
 inventory of scripts and their integrity for relevant pages.
@@ -83,7 +83,7 @@ If multiple script resources would be queued before reports are sent (at a user 
 
 The Resource Timing API can be used to gather up all the URLs of script resources in a document today.
 
-It could also be extended to provide an integrity hash for CORS resources. 
+It could also be extended to provide an integrity hash for CORS-enabled or same-origin resources. 
 
 However, that is not ideal because:
 * Currently browsers don’t calculate these hashes, so starting to calculate them for all scripts in all documents could introduce some overhead.
@@ -120,7 +120,7 @@ On top of that, they may collide with actual CSP policies that the site would wa
 This proposal doesn't expose new information when it comes to URLs - URLs are already exposed in Resource Timing and Service Workers,
 and developers can use the `initiatorType` or `Request.destination` respectively to get that information, albeit in less-secure and more complex ways.
 
-Resource hashes are not currently exposed, but we plan to expose them only for CORS-enabled resources, that the document can already fully read.
+Resource hashes are not currently exposed, but we plan to expose them only for CORS-enabled or same-origin resources, that the document can already fully read.
 That means that developers can already fetch those resources and calculate their hashes on their own. (again, with added complexity)
 
 ## Open questions
