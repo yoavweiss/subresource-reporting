@@ -1,6 +1,6 @@
 # Subresource Reporting
 
-Complex web application often need to keep tabs of the subresources that they download, for security purposes.
+Complex web applications often need to keep tabs of the subresources that they download, for security purposes.
 
 In particular, upcoming industry standards and best practices (e.g.
 [PCI-DSS v4](https://east.pcisecuritystandards.org/document_library?category=pcidss&document=pci_dss) - 
