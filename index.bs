@@ -1,0 +1,172 @@
+<pre class="metadata">
+Title: Subresource Reporting
+ED: https://yoavweiss.github.io/subresource-reporting
+Editor: Yoav Weiss 58673, Shopify https://www.shopify.com, yoav.weiss@shopify.com
+Abstract: This document describes an API for reporting of loaded subresources from web pages.
+Repository: https://github.com/yoavweiss/webusb/
+Status: DREAM
+Shortname: subresource_reporting
+Level: 1
+</pre>
+<pre class="anchors">
+urlPrefix: https://www.rfc-editor.org/rfc/rfc8941; spec: Structured Fields
+    type: dfn
+        text: Dictionary
+urlPrefix: https://www.w3.org/TR/reporting-1/; spec: Reporting
+    type: dfn
+        text: generate and queue a report; url: #generate-and-queue-a-report
+        text: attempt to deliver reports to endpoint; url: #try-delivery
+urlPrefix: https://fetch.spec.whatwg.org/; spec: Fetch
+    type: dfn
+        text: mode; url: #concept-request-mode
+        text: Response; url: #concept-response
+        text: response URL; url: #concept-response-url
+        text: header list; url: #concept-response-header-list
+        text: getting a structured field value; url: #concept-header-list-get-structured-header
+urlPrefix: https://url.spec.whatwg.org/; spec: URL
+    type: dfn
+        text: origin; url: #concept-url-origin
+urlPrefix: https://w3c.github.io/webappsec-secure-contexts/; spec: Secure-Contexts
+    type: dfn
+        text: potentially trustworthy; url: #is-origin-trustworthy
+urlPrefix: https://w3c.github.io/webappsec-subresource-integrity; spec: SRI 
+    type: dfn
+        text: digest; url: #digest
+urlPrefix: https://html.spec.whatwg.org/C; spec: HTML
+    type: dfn
+        text: document; url: #document
+        text: initialize the Document object; url: #initialise-the-document-object
+        text: navigation params; url: #navigation-params
+urlPrefix: https://infra.spec.whatwg.org/; spec: Infra
+    type: dfn
+        text: string; url: #string
+</pre>
+<pre class="biblio">
+{
+  "PCIv4": {
+    "authors": [ "PCI Security Standards Council, LLC" ],
+    "href": "https://east.pcisecuritystandards.org/document_library?category=pcidss&document=pci_dss",
+    "title": "PCI-DSSv4"
+  },
+  "PCIv4-SRI-Gaps": {
+    "authors": [ "Yoav Weiss", "Ilya Grigorik" ],
+    "href": "https://docs.google.com/document/d/1RcUpbpWPxXTyW0Qwczs9GCTLPD3-LcbbhL4ooBUevTM/edit?usp=sharing",
+    "title": "PCIv4: SRI gaps and opportunities"
+  }
+}
+</pre>
+
+# Introduction # {#intro}
+
+Complex web application load many different script assets to their sites,
+and those scripts can then load other assets.
+
+Industry security standards and best practices (e.g. PCI-DSS v4 [[PCIv4]], see [[PCIv4-SRI-Gaps]] for more context)
+require that developers of such applications keep an inventory of all the scripts they download and execute,
+and monitor their integrity.
+
+That creates two different problems that are hard or impossible to acheive on the web today:
+
+* Creating an inventory of all the scripts loaded on a certain document is hard and requires jumping through various hoops,
+    and while developers can abuse CSP's report-only mode to achieve that,
+    it can collide in certain ways with their actual CSP deployments.
+* Getting reports of integrity hashes for loaded scripts is not currently possible,
+    at least not in a secure and consistent manner.
+    Developers can use integrity enforcement (through Subresource Integrity [[SRI]]) on some of those scripts,
+    as they are versioned. But other scripts are dynamic and ever-green,
+    and their contents can change independently of the markup of the page that loads them.
+
+
+In the absence of better mechanisms,
+developers and merchants will need to settle for lower fidelity security guarantees —
+e.g. offline hash verification through crawling.
+Such mechanisms leave a lot to be desired in terms of their coverage,
+while at the same time add a lot of implementation complexity.
+
+This document proposes a new web platform feature on top of the Reporting API [[Reporting]]
+that would enable web developers to create and maintain such inventories in a secure manner,
+and monitor the integrity of the scripts that their sites load.
+
+# Overview # {#overview}
+
+A new Reporting API feature could be used to send reports of all scripts executed in the context of the relevant document,
+including their URLs and their hashes (for CORS-enabled or same-origin resources).
+
+Developers would be able to set up endpoints that collect these reports,
+and process them to maintain an up to date and accurate inventory of scripts and their integrity for relevant pages.
+
+## Flow ## {#flow}
+Developers can set the following headers on their navigation responses:
+```http
+Reporting-Endpoints: subresources="https://example.com/reports"
+Subresource-reporting: script=subresources
+```
+
+The `Subresource-reporting` header would be defined as a [=Dictionary=],
+to enable future extensibility in case we'd want to report subresources beyond scripts.
+
+Each loaded and executed script would then [=generate and queue a report=]
+with the resource's URL and, if the resource was requested with a "cors" [=mode=],
+its integrity [=digest=].
+
+That would eventually send a report that looks something like the following:
+```
+POST /reports HTTP/1.1
+Host: example.com
+...
+Content-Type: application/reports+json
+
+[{
+  "type": "subresource",
+  "age": 12,
+  "url": "https://example.com/",
+  "user_agent": "Mozilla/5.0 (X11; Linux i686; rv:132.0) Gecko/20100101 Firefox/132.0",
+  "body": {
+    "url": "https://example.com/main.js",
+    "digest": "sha256-badbeef"
+  }
+}]
+```
+
+If multiple script resources would be queued before reports are sent (at a user agent defined time),
+the user agent will serialize the entire list of reports
+(as part of its [=attempt to deliver reports to endpoint=] algorithm),
+and send them in a single request.
+
+# Algorithms # {#algorithms}
+
+## Parsing the `Subresource-Reporting` header ## {#parsing}
+To <dfn>parse the Subresource-Reporting header</dfn> given a [=Response=] |response|,
+follow these steps:
+1. Let |parsed header| be the result of [=getting a structured field value=],
+     given "Reporting-Endpoints" and "dictionary" from |response|’s [=header list=].
+1. If |parsed header| is null, return null.
+1. If |parsed header| does not contain "script", return null.
+1. Return |parsed header|["script"]
+
+
+# Integration # {#integration}
+
+A [=document=]'s <dfn>subresource reporting endpoint</dfn> is [=string=]-or-null,
+initially null.
+
+In [=initialize the Document object=], in step 11 (after the Document's creation),
+set <var ignore="">document</var>'s [=subresource reporting endpoint=] to the result of
+[=parse the Subresource-Reporting header|parsing the Subresource-Reporting header=] given
+<var ignore="">navigationParams</var>'s |response|.
+
+<handwave>
+In Main Fetch, before step 22, if the request is CORS-enabled, get the reporting endpoint from request’s client’s global object’s associated Document.
+Then if we have integrity, extend "do bytes match" to return the highest algo's result
+Otherwise, calculate the higher algo result.
+Queue a report with the info.
+</handwave>
+
+# Security and Privacy considerations # {#security-privacy}
+
+This proposal doesn't expose new information when it comes to URLs - URLs are already exposed in Resource Timing and Service Workers,
+and developers can use the `initiatorType` or `Request.destination` respectively to get that information, albeit in less-secure and more complex ways.
+
+Resource hashes are not currently exposed, but we plan to expose them only for CORS-enabled or same-origin resources, that the document can already fully read.
+That means that developers can already fetch those resources and calculate their hashes on their own. (again, with added complexity)
+
