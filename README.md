@@ -1,3 +1,5 @@
+This proposal ended up landing as a [CSP PR](https://github.com/w3c/webappsec-csp/pull/693). I'm leaving it here for historical purposes.
+
 # Subresource Reporting
 
 Complex web applications often need to keep tabs of the subresources that they download, for security purposes.
